@@ -1,0 +1,13 @@
+{
+  "subreddit_list": [
+    "nextfuckinglevel",
+    "interestingasfuck"
+  ],
+  "min_duration_sec": 20,
+  "max_duration_sec": 66,
+  "allow_nsfw": false,
+  "target_platforms": [
+    "tiktok",
+    "yt_shorts"
+  ]
+}

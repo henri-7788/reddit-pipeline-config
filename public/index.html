@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Pipeline Config</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --button-bg: #0ea5e9;
+            --button-hover: #0284c7;
+            --input-bg: #334155;
+            --border-color: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .platform-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .status {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            min-height: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Config Dashboard</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="subreddit_list">Subreddits (comma separated)</label>
+            <input type="text" id="subreddit_list" name="subreddit_list" placeholder="e.g. funny, videos">
+        </div>
+
+        <div class="form-group">
+            <label for="min_duration_sec">Min Duration (seconds)</label>
+            <input type="number" id="min_duration_sec" name="min_duration_sec">
+        </div>
+
+        <div class="form-group">
+            <label for="max_duration_sec">Max Duration (seconds)</label>
+            <input type="number" id="max_duration_sec" name="max_duration_sec">
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="allow_nsfw" name="allow_nsfw">
+            <label for="allow_nsfw" style="margin-bottom: 0;">Allow NSFW</label>
+        </div>
+
+        <div class="form-group">
+            <label>Target Platforms</label>
+            <div class="platform-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="tiktok" name="target_platform" value="tiktok">
+                    <label for="tiktok" style="margin-bottom: 0;">TikTok</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="yt_shorts" name="target_platform" value="yt_shorts">
+                    <label for="yt_shorts" style="margin-bottom: 0;">YT Shorts</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Save Configuration</button>
+        <div id="status" class="status"></div>
+    </form>
+</div>
+
+<script>
+    const statusDiv = document.getElementById('status');
+    const form = document.getElementById('configForm');
+
+    // Load Config
+    async function loadConfig() {
+        try {
+            const res = await fetch('/api/config');
+            if (!res.ok) throw new Error('Failed to load config');
+            const config = await res.json();
+
+            document.getElementById('subreddit_list').value = config.subreddit_list.join(', ');
+            document.getElementById('min_duration_sec').value = config.min_duration_sec;
+            document.getElementById('max_duration_sec').value = config.max_duration_sec;
+            document.getElementById('allow_nsfw').checked = config.allow_nsfw;
+
+            // Platforms
+            document.querySelectorAll('input[name="target_platform"]').forEach(cb => {
+                cb.checked = config.target_platforms.includes(cb.value);
+            });
+
+        } catch (err) {
+            console.error(err);
+            statusDiv.textContent = 'Error loading configuration.';
+            statusDiv.style.color = '#ef4444';
+        }
+    }
+
+    // Save Config
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        statusDiv.textContent = 'Saving...';
+        statusDiv.style.color = '#38bdf8';
+
+        const subreddits = document.getElementById('subreddit_list').value
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+
+        const platforms = Array.from(document.querySelectorAll('input[name="target_platform"]:checked'))
+            .map(cb => cb.value);
+
+        const newConfig = {
+            subreddit_list: subreddits,
+            min_duration_sec: parseInt(document.getElementById('min_duration_sec').value),
+            max_duration_sec: parseInt(document.getElementById('max_duration_sec').value),
+            allow_nsfw: document.getElementById('allow_nsfw').checked,
+            target_platforms: platforms
+        };
+
+        try {
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newConfig)
+            });
+
+            if (res.ok) {
+                statusDiv.textContent = 'Configuration saved successfully!';
+                statusDiv.style.color = '#22c55e';
+                setTimeout(() => statusDiv.textContent = '', 3000);
+            } else {
+                throw new Error('Failed to save');
+            }
+        } catch (err) {
+            console.error(err);
+            statusDiv.textContent = 'Error saving configuration.';
+            statusDiv.style.color = '#ef4444';
+        }
+    });
+
+    // Initialize
+    loadConfig();
+</script>
+
+</body>
+</html>

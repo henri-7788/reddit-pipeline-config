@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,15 +26,18 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
         }
 
         .container {
             background-color: var(--card-bg);
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 500px;
+            transition: all 0.3s ease;
         }
 
         h1 {
@@ -42,6 +46,7 @@
             margin-bottom: 1.5rem;
             color: var(--accent-color);
             text-align: center;
+            font-size: 1.75rem;
         }
 
         .form-group {
@@ -52,41 +57,49 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
+            font-size: 0.95rem;
         }
 
         input[type="text"],
-        input[type="number"] {
+        input[type="number"],
+        input[type="password"] {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.875rem;
             background-color: var(--input-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--text-color);
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input[type="text"]:focus,
-        input[type="number"]:focus {
+        input[type="number"]:focus,
+        input[type="password"]:focus {
             outline: none;
             border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
 
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
         }
-        
+
         .platform-options {
             display: flex;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
         }
 
         input[type="checkbox"] {
             width: 1.25rem;
             height: 1.25rem;
             cursor: pointer;
+            accent-color: var(--accent-color);
         }
 
         button {
@@ -95,16 +108,21 @@
             background-color: var(--button-bg);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 1rem;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
 
         button:hover {
             background-color: var(--button-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         .status {
@@ -112,127 +130,243 @@
             text-align: center;
             font-size: 0.9rem;
             min-height: 1.5rem;
+            font-weight: 500;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        #login-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .platform-options {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Config Dashboard</h1>
-    <form id="configForm">
-        <div class="form-group">
-            <label for="subreddit_list">Subreddits (comma separated)</label>
-            <input type="text" id="subreddit_list" name="subreddit_list" placeholder="e.g. funny, videos">
-        </div>
-
-        <div class="form-group">
-            <label for="min_duration_sec">Min Duration (seconds)</label>
-            <input type="number" id="min_duration_sec" name="min_duration_sec">
-        </div>
-
-        <div class="form-group">
-            <label for="max_duration_sec">Max Duration (seconds)</label>
-            <input type="number" id="max_duration_sec" name="max_duration_sec">
-        </div>
-
-        <div class="form-group checkbox-group">
-            <input type="checkbox" id="allow_nsfw" name="allow_nsfw">
-            <label for="allow_nsfw" style="margin-bottom: 0;">Allow NSFW</label>
-        </div>
-
-        <div class="form-group">
-            <label>Target Platforms</label>
-            <div class="platform-options">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="tiktok" name="target_platform" value="tiktok">
-                    <label for="tiktok" style="margin-bottom: 0;">TikTok</label>
+    <div id="login-overlay">
+        <div class="container" style="max-width: 400px;">
+            <h1>🔒 Login Required</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="password">Enter Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="yt_shorts" name="target_platform" value="yt_shorts">
-                    <label for="yt_shorts" style="margin-bottom: 0;">YT Shorts</label>
+                <button type="submit">Access Parameters</button>
+                <div id="login-error" class="status" style="color: #ef4444;"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Config Dashboard</h1>
+        <form id="configForm">
+            <div class="form-group">
+                <label for="subreddit_list">Subreddits (comma separated)</label>
+                <input type="text" id="subreddit_list" name="subreddit_list" placeholder="e.g. funny, videos">
+            </div>
+
+            <div class="form-group">
+                <label for="min_duration_sec">Min Duration (seconds)</label>
+                <input type="number" id="min_duration_sec" name="min_duration_sec">
+            </div>
+
+            <div class="form-group">
+                <label for="max_duration_sec">Max Duration (seconds)</label>
+                <input type="number" id="max_duration_sec" name="max_duration_sec">
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="allow_nsfw" name="allow_nsfw">
+                <label for="allow_nsfw" style="margin-bottom: 0;">Allow NSFW</label>
+            </div>
+
+            <div class="form-group">
+                <label>Target Platforms</label>
+                <div class="platform-options">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="tiktok" name="target_platform" value="tiktok">
+                        <label for="tiktok" style="margin-bottom: 0;">TikTok</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="yt_shorts" name="target_platform" value="yt_shorts">
+                        <label for="yt_shorts" style="margin-bottom: 0;">YT Shorts</label>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <button type="submit">Save Configuration</button>
-        <div id="status" class="status"></div>
-    </form>
-</div>
+            <button type="submit">Save Configuration</button>
+            <div id="status" class="status"></div>
+        </form>
+    </div>
 
-<script>
-    const statusDiv = document.getElementById('status');
-    const form = document.getElementById('configForm');
+    <script>
+        const statusDiv = document.getElementById('status');
+        const form = document.getElementById('configForm');
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('login-error');
 
-    // Load Config
-    async function loadConfig() {
-        try {
-            const res = await fetch('/api/config');
-            if (!res.ok) throw new Error('Failed to load config');
-            const config = await res.json();
+        let currentPassword = sessionStorage.getItem('app_password') || '';
 
-            document.getElementById('subreddit_list').value = config.subreddit_list.join(', ');
-            document.getElementById('min_duration_sec').value = config.min_duration_sec;
-            document.getElementById('max_duration_sec').value = config.max_duration_sec;
-            document.getElementById('allow_nsfw').checked = config.allow_nsfw;
+        // Auth Headers Helper
+        const getHeaders = () => ({
+            'Content-Type': 'application/json',
+            'x-access-password': currentPassword
+        });
 
-            // Platforms
-            document.querySelectorAll('input[name="target_platform"]').forEach(cb => {
-                cb.checked = config.target_platforms.includes(cb.value);
-            });
-
-        } catch (err) {
-            console.error(err);
-            statusDiv.textContent = 'Error loading configuration.';
-            statusDiv.style.color = '#ef4444';
-        }
-    }
-
-    // Save Config
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        statusDiv.textContent = 'Saving...';
-        statusDiv.style.color = '#38bdf8';
-
-        const subreddits = document.getElementById('subreddit_list').value
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-
-        const platforms = Array.from(document.querySelectorAll('input[name="target_platform"]:checked'))
-            .map(cb => cb.value);
-
-        const newConfig = {
-            subreddit_list: subreddits,
-            min_duration_sec: parseInt(document.getElementById('min_duration_sec').value),
-            max_duration_sec: parseInt(document.getElementById('max_duration_sec').value),
-            allow_nsfw: document.getElementById('allow_nsfw').checked,
-            target_platforms: platforms
-        };
-
-        try {
-            const res = await fetch('/api/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newConfig)
-            });
-
-            if (res.ok) {
-                statusDiv.textContent = 'Configuration saved successfully!';
-                statusDiv.style.color = '#22c55e';
-                setTimeout(() => statusDiv.textContent = '', 3000);
-            } else {
-                throw new Error('Failed to save');
+        // Check Auth & Load
+        async function loadConfig() {
+            if (!currentPassword) {
+                loginOverlay.classList.remove('hidden');
+                return;
             }
-        } catch (err) {
-            console.error(err);
-            statusDiv.textContent = 'Error saving configuration.';
-            statusDiv.style.color = '#ef4444';
-        }
-    });
 
-    // Initialize
-    loadConfig();
-</script>
+            try {
+                const res = await fetch('/api/config', { headers: getHeaders() });
+
+                if (res.status === 401) {
+                    // Invalid password
+                    sessionStorage.removeItem('app_password');
+                    currentPassword = '';
+                    loginOverlay.classList.remove('hidden');
+                    loginError.textContent = 'Session expired. Please login again.';
+                    return;
+                }
+
+                if (!res.ok) throw new Error('Failed to load config');
+
+                const config = await res.json();
+
+                // Success - hide overlay if visible
+                loginOverlay.classList.add('hidden');
+
+                document.getElementById('subreddit_list').value = config.subreddit_list.join(', ');
+                document.getElementById('min_duration_sec').value = config.min_duration_sec;
+                document.getElementById('max_duration_sec').value = config.max_duration_sec;
+                document.getElementById('allow_nsfw').checked = config.allow_nsfw;
+
+                // Platforms
+                document.querySelectorAll('input[name="target_platform"]').forEach(cb => {
+                    cb.checked = config.target_platforms.includes(cb.value);
+                });
+
+            } catch (err) {
+                console.error(err);
+                if (currentPassword) {
+                    statusDiv.textContent = 'Error loading configuration (Server Offline?)';
+                    statusDiv.style.color = '#ef4444';
+                }
+            }
+        }
+
+        // Handle Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('password').value;
+            currentPassword = pwd;
+            loginError.textContent = 'Verifying...';
+
+            try {
+                // Verify by trying to fetch config
+                const res = await fetch('/api/config', { headers: getHeaders() });
+
+                if (res.ok) {
+                    sessionStorage.setItem('app_password', pwd);
+                    loginOverlay.classList.add('hidden');
+                    loadConfig(); // Reload to populate
+                    loginError.textContent = '';
+                    document.getElementById('password').value = '';
+                } else {
+                    loginError.textContent = 'Incorrect password.';
+                    currentPassword = '';
+                }
+            } catch (e) {
+                loginError.textContent = 'Connection error.';
+            }
+        });
+
+        // Save Config
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            statusDiv.textContent = 'Saving...';
+            statusDiv.style.color = '#38bdf8';
+
+            const subreddits = document.getElementById('subreddit_list').value
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            const platforms = Array.from(document.querySelectorAll('input[name="target_platform"]:checked'))
+                .map(cb => cb.value);
+
+            const newConfig = {
+                subreddit_list: subreddits,
+                min_duration_sec: parseInt(document.getElementById('min_duration_sec').value),
+                max_duration_sec: parseInt(document.getElementById('max_duration_sec').value),
+                allow_nsfw: document.getElementById('allow_nsfw').checked,
+                target_platforms: platforms
+            };
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(newConfig)
+                });
+
+                if (res.ok) {
+                    statusDiv.textContent = 'Configuration saved successfully!';
+                    statusDiv.style.color = '#22c55e';
+                    setTimeout(() => statusDiv.textContent = '', 3000);
+                } else if (res.status === 401) {
+                    statusDiv.textContent = 'Unauthorized. Please refresh.';
+                    statusDiv.style.color = '#ef4444';
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = 'Error saving configuration.';
+                statusDiv.style.color = '#ef4444';
+            }
+        });
+
+        // Initialize
+        loadConfig();
+    </script>
 
 </body>
+
 </html>

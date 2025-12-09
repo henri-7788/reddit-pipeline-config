@@ -13,6 +13,22 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Simple Auth Middleware
+const PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+console.log(`🔒 Admin Password set to: "${PASSWORD}"`);
+
+const authMiddleware = (req, res, next) => {
+    const providedPass = req.headers['x-access-password'];
+    if (providedPass === PASSWORD) {
+        next();
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+};
+
+// Protect API routes
+app.use('/api', authMiddleware);
+
 // GET /api/config - Read configuration
 app.get('/api/config', (req, res) => {
     fs.readFile(CONFIG_PATH, 'utf8', (err, data) => {

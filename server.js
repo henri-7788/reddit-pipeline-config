@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Simple Auth Middleware
-const PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const PASSWORD = process.env.ADMIN_PASSWORD || 'Homburg-1';
 console.log(`🔒 Admin Password set to: "${PASSWORD}"`);
 
 const authMiddleware = (req, res, next) => {

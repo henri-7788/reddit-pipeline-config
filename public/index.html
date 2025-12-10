@@ -214,14 +214,15 @@
                 <input type="number" id="video_margin_px" name="video_margin_px" placeholder="e.g. 50">
             </div>
 
-            <div class="form-group">
-                <label for="aspect_ratio">Aspect Ratio</label>
-                <select id="aspect_ratio" name="aspect_ratio">
-                    <option value="9:16">9:16 (Vertical)</option>
-                    <option value="16:9">16:9 (Landscape)</option>
-                    <option value="1:1">1:1 (Square)</option>
-                    <option value="4:5">4:5 (Portrait)</option>
-                </select>
+            <div class="form-group" style="display: flex; gap: 1rem;">
+                <div style="flex: 1;">
+                    <label for="video_width">Width (px)</label>
+                    <input type="number" id="video_width" name="video_width" placeholder="1080">
+                </div>
+                <div style="flex: 1;">
+                    <label for="video_height">Height (px)</label>
+                    <input type="number" id="video_height" name="video_height" placeholder="1920">
+                </div>
             </div>
 
             <div class="form-group checkbox-group">
@@ -319,7 +320,8 @@
                 document.getElementById('min_duration_sec').value = config.min_duration_sec;
                 document.getElementById('max_duration_sec').value = config.max_duration_sec;
                 document.getElementById('video_margin_px').value = config.video_margin_px || 0;
-                document.getElementById('aspect_ratio').value = config.aspect_ratio || '9:16';
+                document.getElementById('video_width').value = config.video_width || 1080;
+                document.getElementById('video_height').value = config.video_height || 1920;
                 document.getElementById('allow_nsfw').checked = config.allow_nsfw;
 
                 // Platforms
@@ -386,7 +388,8 @@
                 min_duration_sec: parseInt(document.getElementById('min_duration_sec').value),
                 max_duration_sec: parseInt(document.getElementById('max_duration_sec').value),
                 video_margin_px: parseInt(document.getElementById('video_margin_px').value) || 0,
-                aspect_ratio: document.getElementById('aspect_ratio').value,
+                video_width: parseInt(document.getElementById('video_width').value) || 1080,
+                video_height: parseInt(document.getElementById('video_height').value) || 1920,
                 allow_nsfw: document.getElementById('allow_nsfw').checked,
                 postSort: document.getElementById('postSort').value,
                 postTimeframe: document.getElementById('postTimeframe').value,

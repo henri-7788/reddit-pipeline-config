@@ -62,7 +62,8 @@
 
         input[type="text"],
         input[type="number"],
-        input[type="password"] {
+        input[type="password"],
+        select {
             width: 100%;
             padding: 0.875rem;
             background-color: var(--input-bg);
@@ -76,7 +77,8 @@
 
         input[type="text"]:focus,
         input[type="number"]:focus,
-        input[type="password"]:focus {
+        input[type="password"]:focus,
+        select:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
@@ -193,7 +195,7 @@
         <h1>Config Dashboard</h1>
         <form id="configForm">
             <div class="form-group">
-                <label for="subreddit_list">Subreddits (comma separated)</label>
+                <label for="subreddit_list">Subreddits (comma separated) Randomly selected from list!</label>
                 <input type="text" id="subreddit_list" name="subreddit_list" placeholder="e.g. funny, videos">
             </div>
 
@@ -207,9 +209,46 @@
                 <input type="number" id="max_duration_sec" name="max_duration_sec">
             </div>
 
+            <div class="form-group">
+                <label for="video_margin_px">Video Margin (px)</label>
+                <input type="number" id="video_margin_px" name="video_margin_px" placeholder="e.g. 50">
+            </div>
+
+            <div class="form-group">
+                <label for="aspect_ratio">Aspect Ratio</label>
+                <select id="aspect_ratio" name="aspect_ratio">
+                    <option value="9:16">9:16 (Vertical)</option>
+                    <option value="16:9">16:9 (Landscape)</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:5">4:5 (Portrait)</option>
+                </select>
+            </div>
+
             <div class="form-group checkbox-group">
                 <input type="checkbox" id="allow_nsfw" name="allow_nsfw">
                 <label for="allow_nsfw" style="margin-bottom: 0;">Allow NSFW</label>
+            </div>
+
+            <div class="form-group">
+                <label for="postSort">Post Sort</label>
+                <select id="postSort" name="postSort">
+                    <option value="hot">Hot</option>
+                    <option value="top">Top</option>
+                    <option value="new">New</option>
+                    <option value="rising">Rising</option>
+                    <option value="controversial">Controversial</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="timeframeGroup">
+                <label for="postTimeframe">Timeframe</label>
+                <select id="postTimeframe" name="postTimeframe">
+                    <option value="day">Day</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                    <option value="year">Year</option>
+                    <option value="all">All Time</option>
+                </select>
             </div>
 
             <div class="form-group">
@@ -222,6 +261,10 @@
                     <div class="checkbox-group">
                         <input type="checkbox" id="yt_shorts" name="target_platform" value="yt_shorts">
                         <label for="yt_shorts" style="margin-bottom: 0;">YT Shorts</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="reels" name="target_platform" value="reels">
+                        <label for="reels" style="margin-bottom: 0;">Reels</label>
                     </div>
                 </div>
             </div>
@@ -275,12 +318,19 @@
                 document.getElementById('subreddit_list').value = config.subreddit_list.join(', ');
                 document.getElementById('min_duration_sec').value = config.min_duration_sec;
                 document.getElementById('max_duration_sec').value = config.max_duration_sec;
+                document.getElementById('video_margin_px').value = config.video_margin_px || 0;
+                document.getElementById('aspect_ratio').value = config.aspect_ratio || '9:16';
                 document.getElementById('allow_nsfw').checked = config.allow_nsfw;
 
                 // Platforms
                 document.querySelectorAll('input[name="target_platform"]').forEach(cb => {
                     cb.checked = config.target_platforms.includes(cb.value);
                 });
+
+                // New Config Fields
+                document.getElementById('postSort').value = config.postSort || 'hot';
+                document.getElementById('postTimeframe').value = config.postTimeframe || 'day';
+                updateTimeframeState(); // Initialize state
 
             } catch (err) {
                 console.error(err);
@@ -335,7 +385,11 @@
                 subreddit_list: subreddits,
                 min_duration_sec: parseInt(document.getElementById('min_duration_sec').value),
                 max_duration_sec: parseInt(document.getElementById('max_duration_sec').value),
+                video_margin_px: parseInt(document.getElementById('video_margin_px').value) || 0,
+                aspect_ratio: document.getElementById('aspect_ratio').value,
                 allow_nsfw: document.getElementById('allow_nsfw').checked,
+                postSort: document.getElementById('postSort').value,
+                postTimeframe: document.getElementById('postTimeframe').value,
                 target_platforms: platforms
             };
 
@@ -362,6 +416,23 @@
                 statusDiv.style.color = '#ef4444';
             }
         });
+
+        // Dynamic UI Logic
+        const postSort = document.getElementById('postSort');
+        const postTimeframe = document.getElementById('postTimeframe');
+
+        function updateTimeframeState() {
+            const val = postSort.value;
+            if (val === 'top' || val === 'controversial') {
+                postTimeframe.disabled = false;
+                postTimeframe.parentElement.style.opacity = '1';
+            } else {
+                postTimeframe.disabled = true;
+                postTimeframe.parentElement.style.opacity = '0.5';
+            }
+        }
+
+        postSort.addEventListener('change', updateTimeframeState);
 
         // Initialize
         loadConfig();

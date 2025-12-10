@@ -5,9 +5,14 @@
   ],
   "min_duration_sec": 20,
   "max_duration_sec": 66,
+  "video_margin_px": 20,
+  "aspect_ratio": "9:16",
   "allow_nsfw": false,
+  "postSort": "top",
+  "postTimeframe": "week",
   "target_platforms": [
     "tiktok",
-    "yt_shorts"
+    "yt_shorts",
+    "reels"
   ]
 }
